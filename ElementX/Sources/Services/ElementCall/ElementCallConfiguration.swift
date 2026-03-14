@@ -8,6 +8,11 @@
 
 import SwiftUI
 
+enum ElementCallMediaType: Equatable {
+    case audio
+    case video
+}
+
 private enum GenericCallLinkQueryParameters {
     static let appPrompt = "appPrompt"
     static let confineToRoom = "confineToRoom"
@@ -27,9 +32,11 @@ struct ElementCallConfiguration {
     
     /// The type of call being configured i.e. whether it's an external URL or an internal room call.
     let kind: Kind
+    let mediaType: ElementCallMediaType
     
     /// Creates a configuration for an external call URL.
     init(genericCallLink url: URL) {
+        mediaType = .video
         if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true) {
             var fragmentQueryItems = urlComponents.fragmentQueryItems ?? []
             
@@ -59,13 +66,15 @@ struct ElementCallConfiguration {
          clientID: String,
          elementCallBaseURL: URL,
          elementCallBaseURLOverride: URL?,
-         colorScheme: ColorScheme) {
+         colorScheme: ColorScheme,
+         mediaType: ElementCallMediaType = .video) {
         kind = .roomCall(roomProxy: roomProxy,
                          clientProxy: clientProxy,
                          clientID: clientID,
                          elementCallBaseURL: elementCallBaseURL,
                          elementCallBaseURLOverride: elementCallBaseURLOverride,
                          colorScheme: colorScheme)
+        self.mediaType = mediaType
     }
     
     /// A string representing the call being configured.

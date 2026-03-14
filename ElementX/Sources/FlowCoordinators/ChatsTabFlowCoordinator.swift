@@ -16,7 +16,7 @@ enum ChatsTabFlowCoordinatorAction {
     case showSettings
     case showChatBackupSettings
     case sessionVerification(SessionVerificationScreenFlow)
-    case showCallScreen(roomProxy: JoinedRoomProxyProtocol)
+    case showCallScreen(roomProxy: JoinedRoomProxyProtocol, mediaType: ElementCallMediaType)
     case hideCallScreenOverlay
     case logout
 }
@@ -527,8 +527,8 @@ class ChatsTabFlowCoordinator: FlowCoordinatorProtocol {
             guard let self else { return }
             
             switch action {
-            case .presentCallScreen(let roomProxy):
-                actionsSubject.send(.showCallScreen(roomProxy: roomProxy))
+            case .presentCallScreen(let roomProxy, let mediaType):
+                actionsSubject.send(.showCallScreen(roomProxy: roomProxy, mediaType: mediaType))
             case .verifyUser(let userID):
                 actionsSubject.send(.sessionVerification(.userInitiator(userID: userID)))
             case .continueWithSpaceFlow(let spaceRoomListProxy):
@@ -585,7 +585,7 @@ class ChatsTabFlowCoordinator: FlowCoordinatorProtocol {
                 guard let self else { return }
                 switch action {
                 case .presentCallScreen(let roomProxy):
-                    actionsSubject.send(.showCallScreen(roomProxy: roomProxy))
+                    actionsSubject.send(.showCallScreen(roomProxy: roomProxy, mediaType: .video))
                 case .verifyUser(let userID):
                     actionsSubject.send(.sessionVerification(.userInitiator(userID: userID)))
                 case .finished:
@@ -788,7 +788,7 @@ class ChatsTabFlowCoordinator: FlowCoordinatorProtocol {
                 navigationSplitCoordinator.setSheetCoordinator(nil)
                 stateMachine.processEvent(.selectRoom(roomID: roomID, via: [], entryPoint: .room))
             case .startCall(let roomProxy):
-                actionsSubject.send(.showCallScreen(roomProxy: roomProxy))
+                actionsSubject.send(.showCallScreen(roomProxy: roomProxy, mediaType: .video))
             case .dismiss:
                 navigationSplitCoordinator.setSheetCoordinator(nil)
             }

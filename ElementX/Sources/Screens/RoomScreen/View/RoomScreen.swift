@@ -176,17 +176,27 @@ struct RoomScreen: View {
     private var callButton: some View {
         if context.viewState.hasOngoingCall {
             JoinCallButton {
-                context.send(viewAction: .displayCall)
+                context.send(viewAction: .displayCall(mediaType: .video))
             }
             .accessibilityIdentifier(A11yIdentifiers.roomScreen.joinCall)
         } else {
-            Button {
-                context.send(viewAction: .displayCall)
-            } label: {
-                CompoundIcon(\.videoCallSolid)
+            HStack(spacing: 8) {
+                Button {
+                    context.send(viewAction: .displayCall(mediaType: .audio))
+                } label: {
+                    CompoundIcon(\.voiceCallSolid)
+                }
+                .accessibilityLabel(L10n.a11yStartVoiceCall)
+                .accessibilityIdentifier(A11yIdentifiers.roomScreen.startVoiceCall)
+
+                Button {
+                    context.send(viewAction: .displayCall(mediaType: .video))
+                } label: {
+                    CompoundIcon(\.videoCallSolid)
+                }
+                .accessibilityLabel(L10n.a11yStartCall)
+                .accessibilityIdentifier(A11yIdentifiers.roomScreen.joinCall)
             }
-            .accessibilityLabel(L10n.a11yStartCall)
-            .accessibilityIdentifier(A11yIdentifiers.roomScreen.joinCall)
         }
     }
 }

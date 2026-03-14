@@ -44,8 +44,8 @@ struct RoomTimelineItemView: View {
             EmoteRoomTimelineView(timelineItem: item)
         case .notice(let item):
             NoticeRoomTimelineView(timelineItem: item)
-        case .redacted(let item):
-            RedactedRoomTimelineView(timelineItem: item)
+        case .redacted:
+            EmptyView()
         case .encrypted(let item):
             EncryptedRoomTimelineView(timelineItem: item)
         case .readMarker(let item):
