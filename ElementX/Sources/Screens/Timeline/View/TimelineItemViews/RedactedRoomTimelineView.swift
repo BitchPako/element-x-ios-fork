@@ -13,10 +13,7 @@ struct RedactedRoomTimelineView: View {
     let timelineItem: RedactedRoomTimelineItem
     
     var body: some View {
-        TimelineStyler(timelineItem: timelineItem) {
-            Label(timelineItem.body, icon: \.delete, iconSize: .small, relativeTo: .compound.bodyLG)
-                .labelStyle(RoomTimelineViewPlaceholderLabelStyle())
-        }
+        EmptyView()
     }
 }
 
