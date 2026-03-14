@@ -95,6 +95,10 @@ private extension AppAppearance {
             return L10n.commonLight
         case .dark:
             return L10n.commonDark
+        case .forest:
+            return "Forest"
+        case .ocean:
+            return "Ocean"
         }
     }
 }

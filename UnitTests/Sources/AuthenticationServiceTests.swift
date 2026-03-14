@@ -20,7 +20,7 @@ struct AuthenticationServiceTests {
     
     @Test
     mutating func passwordLogin() async {
-        setup(serverAddress: "example.com")
+        setup()
         
         switch await service.configure(for: "example.com", flow: .login) {
         case .success:
@@ -30,7 +30,7 @@ struct AuthenticationServiceTests {
         }
         
         #expect(service.flow == .login)
-        #expect(service.homeserver.value == .mockBasicServer)
+        #expect(service.homeserver.value.address == "matrix.bridgemsg.ru")
         
         switch await service.login(username: "alice", password: "12345678", initialDeviceName: nil, deviceID: nil) {
         case .success:
@@ -55,7 +55,7 @@ struct AuthenticationServiceTests {
         }
         
         #expect(service.flow == .login)
-        #expect(service.homeserver.value == .mockMatrixDotOrg)
+        #expect(service.homeserver.value.address == "matrix.bridgemsg.ru")
     }
     
     @Test
@@ -70,14 +70,14 @@ struct AuthenticationServiceTests {
         }
         
         #expect(service.flow == .register)
-        #expect(service.homeserver.value == .mockMatrixDotOrg)
+        #expect(service.homeserver.value.address == "matrix.bridgemsg.ru")
     }
     
     @Test
     @MainActor
     mutating func configureRegisterNoSupport() async {
         let homeserverAddress = "example.com"
-        setup(serverAddress: homeserverAddress)
+        setup()
         
         switch await service.configure(for: homeserverAddress, flow: .register) {
         case .success:
@@ -87,16 +87,22 @@ struct AuthenticationServiceTests {
         }
         
         #expect(service.flow == .login)
-        #expect(service.homeserver.value == .init(address: "matrix.org", loginMode: .unknown))
+        #expect(service.homeserver.value == .init(address: "matrix.bridgemsg.ru", loginMode: .unknown))
     }
     
     // MARK: - Helpers
     
-    private mutating func setup(serverAddress: String = "matrix.org") {
-        let configuration: AuthenticationClientFactoryMock.Configuration = .init()
+    private mutating func setup() {
+        var configuration: AuthenticationClientFactoryMock.Configuration = .init()
+        configuration.homeserverClients["matrix.bridgemsg.ru"] = ClientSDKMock(configuration: .init(serverAddress: "matrix.bridgemsg.ru",
+                                                                                                             homeserverURL: "https://matrix.bridgemsg.ru",
+                                                                                                             slidingSyncVersion: .native,
+                                                                                                             oidcLoginURL: "https://auth.matrix.bridgemsg.ru/oidc",
+                                                                                                             supportsOIDCCreatePrompt: false,
+                                                                                                             supportsPasswordLogin: true))
         let clientFactory = AuthenticationClientFactoryMock(configuration: configuration)
         
-        client = configuration.homeserverClients[serverAddress]
+        client = configuration.homeserverClients["matrix.bridgemsg.ru"]
         userSessionStore = UserSessionStoreMock(configuration: .init())
         encryptionKeyProvider = MockEncryptionKeyProvider()
         

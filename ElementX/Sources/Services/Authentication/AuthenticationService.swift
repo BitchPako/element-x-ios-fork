@@ -21,6 +21,8 @@ class AuthenticationService: AuthenticationServiceProtocol {
     private let appSettings: AppSettings
     private let appHooks: AppHooks
     
+    private static let homeserverAddress = "matrix.bridgemsg.ru"
+
     private let homeserverSubject: CurrentValueSubject<LoginHomeserver, Never>
     var homeserver: CurrentValuePublisher<LoginHomeserver, Never> {
         homeserverSubject.asCurrentValuePublisher()
@@ -56,7 +58,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
         }
         
         // When updating these, don't forget to update the reset method too.
-        homeserverSubject = .init(LoginHomeserver(address: appSettings.accountProviders[0], loginMode: .unknown))
+        homeserverSubject = .init(LoginHomeserver(address: Self.homeserverAddress, loginMode: .unknown))
         flow = .login
     }
     
@@ -64,9 +66,12 @@ class AuthenticationService: AuthenticationServiceProtocol {
     
     func configure(for homeserverAddress: String, flow: AuthenticationFlow) async -> Result<Void, AuthenticationServiceError> {
         do {
-            var homeserver = LoginHomeserver(address: homeserverAddress, loginMode: .unknown)
+            if homeserverAddress != Self.homeserverAddress {
+                MXLog.info("Ignoring requested homeserver \(homeserverAddress) and using hardcoded homeserver \(Self.homeserverAddress).")
+            }
+            var homeserver = LoginHomeserver(address: Self.homeserverAddress, loginMode: .unknown)
             
-            let client = try await makeClient(homeserverAddress: homeserverAddress)
+            let client = try await makeClient(homeserverAddress: Self.homeserverAddress)
             let loginDetails = await client.homeserverLoginDetails()
             
             homeserver.loginMode = if loginDetails.supportsOidcLogin() {
@@ -201,7 +206,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
         
         Task {
             do {
-                let client = try await makeClient(homeserverAddress: scannedServerName)
+                let client = try await makeClient(homeserverAddress: Self.homeserverAddress)
                 let qrCodeHandler = client.newLoginWithQrCodeHandler(oidcConfiguration: appSettings.oidcConfiguration.rustValue)
                 try await qrCodeHandler.scan(qrCodeData: qrData, progressListener: listener)
                 
@@ -226,7 +231,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
     }
     
     func reset() {
-        homeserverSubject.send(LoginHomeserver(address: appSettings.accountProviders[0], loginMode: .unknown))
+        homeserverSubject.send(LoginHomeserver(address: Self.homeserverAddress, loginMode: .unknown))
         flow = .login
         client = nil
     }
