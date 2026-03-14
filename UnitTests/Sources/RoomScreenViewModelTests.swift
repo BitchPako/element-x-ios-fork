@@ -275,6 +275,30 @@ final class RoomScreenViewModelTests {
     }
     
     @Test
+    func displayCallActionIncludesMediaType() async throws {
+        let roomProxyMock = JoinedRoomProxyMock(.init(id: "MyRoomID"))
+        let viewModel = RoomScreenViewModel(userSession: UserSessionMock(.init()),
+                                            roomProxy: roomProxyMock,
+                                            initialSelectedPinnedEventID: nil,
+                                            ongoingCallRoomIDPublisher: .init(.init(nil)),
+                                            appSettings: ServiceLocator.shared.settings,
+                                            appHooks: AppHooks(),
+                                            analyticsService: ServiceLocator.shared.analytics,
+                                            userIndicatorController: ServiceLocator.shared.userIndicatorController)
+        self.viewModel = viewModel
+
+        let deferred = deferFulfillment(viewModel.actions) { action in
+            if case .displayCall(mediaType: .audio) = action {
+                return true
+            }
+            return false
+        }
+
+        viewModel.context.send(viewAction: .displayCall(mediaType: .audio))
+        try await deferred.fulfill()
+    }
+
+    @Test
     func callButtonVisibility() async throws {
         // Given a room screen with no ongoing call.
         let ongoingCallRoomIDSubject = CurrentValueSubject<String?, Never>(nil)

@@ -203,8 +203,8 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                     handleAppRoute(.chatBackupSettings, animated: true)
                 case .sessionVerification(let flow):
                     presentSessionVerificationScreen(flow: flow)
-                case .showCallScreen(let roomProxy):
-                    presentCallScreen(roomProxy: roomProxy)
+                case .showCallScreen(let roomProxy, let mediaType):
+                    presentCallScreen(roomProxy: roomProxy, mediaType: mediaType)
                 case .hideCallScreenOverlay:
                     hideCallScreenOverlay()
                 case .logout:
@@ -218,7 +218,7 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
                 guard let self else { return }
                 switch action {
                 case .presentCallScreen(let roomProxy):
-                    presentCallScreen(roomProxy: roomProxy)
+                    presentCallScreen(roomProxy: roomProxy, mediaType: .video)
                 case .verifyUser(let userID):
                     presentSessionVerificationScreen(flow: .userInitiator(userID: userID))
                 case .showSettings:
@@ -399,17 +399,18 @@ class UserSessionFlowCoordinator: FlowCoordinatorProtocol {
             return
         }
         
-        presentCallScreen(roomProxy: roomProxy)
+        presentCallScreen(roomProxy: roomProxy, mediaType: .video)
     }
     
-    private func presentCallScreen(roomProxy: JoinedRoomProxyProtocol) {
+    private func presentCallScreen(roomProxy: JoinedRoomProxyProtocol, mediaType: ElementCallMediaType) {
         let colorScheme: ColorScheme = flowParameters.windowManager.mainWindow.traitCollection.userInterfaceStyle == .light ? .light : .dark
         presentCallScreen(configuration: .init(roomProxy: roomProxy,
                                                clientProxy: userSession.clientProxy,
                                                clientID: InfoPlistReader.main.bundleIdentifier,
                                                elementCallBaseURL: flowParameters.appSettings.elementCallBaseURL,
                                                elementCallBaseURLOverride: flowParameters.appSettings.elementCallBaseURLOverride,
-                                               colorScheme: colorScheme))
+                                               colorScheme: colorScheme,
+                                               mediaType: mediaType))
     }
     
     private var callScreenPictureInPictureController: AVPictureInPictureController?
